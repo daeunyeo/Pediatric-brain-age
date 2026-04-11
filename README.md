@@ -394,12 +394,7 @@ pediatric-brain-age/
 │   ├── model_comparison.png
 │   ├── permutation_test.png
 │   └── brain_age_report.png
-├── pipeline/
-│   ├── 01_data_fc_matrix.ipynb
-│   ├── 02_child_filtering.ipynb
-│   ├── 03_model_comparison_full.ipynb
-│   ├── 04_model_comparison_pediatric.ipynb
-│   └── 05_brain_age_report.ipynb
+├── brain_age_pipeline.ipynb
 ├── README.md
 └── requirements.txt
 ```
