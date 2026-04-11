@@ -233,7 +233,6 @@ Pipeline: `StandardScaler → [PCA] → Regressor`, 5-fold KFold.
 | SVR (linear) | 1.73 ± 0.13 yrs | 0.139 |
 | ElasticNet | 1.65 ± 0.12 yrs | 0.207 |
 | KRR (RBF) | 1.93 ± 0.20 yrs | −0.123 |
-
 | **PCA + Ridge** | **1.58 ± 0.16 yrs** | **0.292** |
 
 <img width="690" height="390" alt="model_comparison" src="https://github.com/user-attachments/assets/24d3d872-cdeb-423c-95ed-78a1fee86678" />
@@ -399,7 +398,7 @@ pediatric-brain-age/
 └── requirements.txt
 ```
 
-Clone the repo and run the notebooks in `pipeline/` sequentially (01 → 05).
+Clone the repo and run the notebooks in `brain_age_pipeline.ipynb` sequentially (01 → 05).
 The dataset fetches automatically on first run via `nilearn` and caches under `~/nilearn_data/`.
 
 ---
