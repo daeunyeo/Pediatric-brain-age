@@ -389,14 +389,22 @@ sequential or state-dependent patterns in brain activity.
 
 ```
 pediatric-brain-age/
-├── notebook/
-│   └── 13.ipynb               # Full analysis notebook (sequential)
+├── figures/
+│   ├── fc_matrix_example.png
+│   ├── model_comparison.png
+│   ├── permutation_test.png
+│   └── brain_age_report.png
+├── pipeline/
+│   ├── 01_data_fc_matrix.ipynb
+│   ├── 02_child_filtering.ipynb
+│   ├── 03_model_comparison_full.ipynb
+│   ├── 04_model_comparison_pediatric.ipynb
+│   └── 05_brain_age_report.ipynb
 ├── README.md
 └── requirements.txt
 ```
 
-Clone the repo and run `notebook/13.ipynb` top-to-bottom.
-
+Clone the repo and run the notebooks in `pipeline/` sequentially (01 → 05).
 The dataset fetches automatically on first run via `nilearn` and caches under `~/nilearn_data/`.
 
 ---
