@@ -10,8 +10,8 @@
 |---|---|---|---|
 | Child/Adult Classification | SVM (linear) | Accuracy | 96.7% |
 | Child/Adult Classification | SVM (linear) | Adult F1 | 0.915 |
-| Pediatric Brain Age Regression | PCA + Ridge | MAE | 1.59 yrs |
-| Pediatric Brain Age Regression | PCA + Ridge | R² | 0.289 |
+| Pediatric Brain Age Regression | PCA + Ridge | MAE | 1.58 yrs |
+| Pediatric Brain Age Regression | PCA + Ridge | R² | 0.292 |
 | Statistical Validation | Permutation Test | p-value | 0.010 |
 
 ---
@@ -104,6 +104,8 @@ built around passive movie-watching is substantially more deployable with
 children than a resting-state scan, which demands extended still compliance.
 This makes the pipeline developed here a more realistic candidate for
 future extension toward applied developmental screening.
+
+<img width="683" height="578" alt="fc_matrix_example" src="https://github.com/user-attachments/assets/0bdb777a-63da-4931-854b-3e9e9d089105" />
 
 ### Class Imbalance Handling
 
@@ -232,7 +234,9 @@ Pipeline: `StandardScaler → [PCA] → Regressor`, 5-fold KFold.
 | ElasticNet | 1.65 ± 0.12 yrs | 0.207 |
 | KRR (RBF) | 1.93 ± 0.20 yrs | −0.123 |
 
-| **PCA + Ridge** | **1.59 ± 0.14 yrs** | **0.289** |
+| **PCA + Ridge** | **1.58 ± 0.16 yrs** | **0.292** |
+
+<img width="690" height="390" alt="model_comparison" src="https://github.com/user-attachments/assets/24d3d872-cdeb-423c-95ed-78a1fee86678" />
 
 **Why PCA + Ridge?**
 
@@ -276,7 +280,7 @@ exploiting random correlations, a permutation test was conducted:
 
 | | MAE |
 |---|---|
-| Observed model | 1.60 yrs |
+| Observed model | 1.59 yrs |
 | Mean of 100 permutations (shuffled labels) | 2.20 yrs |
 | p-value | **0.010** |
 
@@ -284,7 +288,9 @@ The observed MAE falls below the 1st percentile of the null distribution
 (p = 0.010), confirming that the model captures real developmental signal
 in the FC patterns beyond chance level.
 
-Note: R² = 0.289 indicates that approximately 29% of age variance is explained
+<img width="690" height="390" alt="permutation_test" src="https://github.com/user-attachments/assets/b9cc1973-ebc5-4755-a78f-e982320e2efd" />
+
+Note: R² = 0.292 indicates that approximately 29% of age variance is explained
 by the model. While statistically significant, this leaves substantial
 unexplained variance — a limitation acknowledged in Section 7.
 
@@ -318,6 +324,8 @@ Peer ranking   : Top 46%  (24th out of 50 age-matched peers)
 Interpretation : Brain development approximately 0.6 yrs ahead of peers
 ```
 
+<img width="1289" height="515" alt="69" src="https://github.com/user-attachments/assets/cb1b8b18-468b-481d-9b82-1e8e70e20c5e" />
+
 The report consists of two panels:
 
 - **Left panel**: Distribution of Brain Age Gap among age-matched peers
@@ -340,7 +348,7 @@ evaluation contexts.
 
 ### Limitations
 
-**1. Low R² (0.289)**
+**1. Low R² (0.292)**
 The model explains approximately 29% of age variance in the pediatric sample.
 The permutation test confirms this is above chance (p = 0.010), but the
 majority of developmental variance in FC patterns remains unaccounted for by
