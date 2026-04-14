@@ -33,10 +33,10 @@ This project addresses the following question:
 
 The project was structured as a deliberate two-step progression:
 
-1. **Step 1 — Classification**: Can FC patterns distinguish children from
+1. **Step 1. Classification**: Can FC patterns distinguish children from
    adults? This verifies that the connectivity matrix carries age-relevant
    information at all.
-2. **Step 2 — Regression**: Can FC patterns predict continuous age? This
+2. **Step 2. Regression**: Can FC patterns predict continuous age? This
    reframes the same data as a finer-grained estimation problem.
 
 Moving from classification to regression on the same pipeline was intentional: the same FC representation handles both tasks, and the comparison shows what each formulation reveals about the data.
