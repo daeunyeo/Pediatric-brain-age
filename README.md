@@ -22,10 +22,7 @@
 
 The brain does not develop at a uniform pace across individuals. Two children
 of the same chronological age may differ substantially in their neural
-maturation. Neuroimaging offers a way to quantify this gap — but translating
-raw fMRI signals into interpretable developmental indices requires a complete
-machine-learning pipeline, from signal extraction to individual-level
-reporting.
+maturation. Neuroimaging offers a way to quantify this gap, but translating raw fMRI signals into interpretable developmental indices requires a complete ML pipeline from signal extraction to individual-level reporting.
 
 This project addresses the following question:
 
@@ -42,15 +39,11 @@ The project was structured as a deliberate two-step progression:
 2. **Step 2 — Regression**: Can FC patterns predict continuous age? This
    reframes the same data as a finer-grained estimation problem.
 
-Moving from classification to regression on the same pipeline was intentional:
-it demonstrates that the representation (FC matrix) is not task-specific, and
-allows a direct comparison of what each problem formulation reveals.
+Moving from classification to regression on the same pipeline was intentional: the same FC representation handles both tasks, and the comparison shows what each formulation reveals about the data.
 
 ### Why Brain Age Gap?
 
-Predicting chronological age is not the end goal. The **Brain Age Gap** —
-the residual between predicted brain age and actual age — is the informative
-quantity. A positive gap indicates that the brain appears more mature than
+Predicting chronological age is not the end goal. The **Brain Age Gap**, defined as the residual between predicted brain age and actual age, is the informative quantity. A positive gap indicates that the brain appears more mature than
 expected for the child's age; a negative gap indicates the reverse. This
 residual has potential value as an individual-level indicator for
 developmental evaluation in educational or clinical contexts.
@@ -82,17 +75,13 @@ Resting-state fMRI requires subjects to remain still without any external
 stimulus. This is a known practical problem with young children, who show
 elevated head motion artifacts under resting conditions. The movie-watching
 paradigm in ds000228 naturally sustains visual attention, reducing motion
-artifacts and improving signal quality in pediatric subjects. Using a
-naturalistic stimulus to engage young participants is an established approach
-in developmental neuroimaging research.
+artifacts and improving signal quality in pediatric subjects. Using naturalistic stimuli to sustain attention in young participants is standard practice in developmental neuroimaging.
 
 **② Alignment with the dataset's original research purpose**
 
 ds000228 was originally designed to study the development of the social brain
 (Richardson et al., 2018). The Pixar stimulus was selected by the original
-authors to engage social cognition networks — including regions associated
-with theory of mind and narrative comprehension — which are known to undergo
-substantial functional reorganization during childhood. This means the FC
+authors to engage social cognition networks (including regions associated with theory of mind and narrative comprehension) known to undergo substantial functional reorganization during childhood. This means the FC
 patterns in this dataset are particularly likely to carry developmental signal
 relevant to the prediction task pursued here.
 
@@ -110,9 +99,7 @@ future extension toward applied developmental screening.
 ### Class Imbalance Handling
 
 The original dataset contains roughly 4:1 children-to-adult ratio (122:33).
-Rather than reducing the majority class to force equal counts — which would
-have decreased the training set by approximately 55% — the original
-distribution was preserved and `class_weight='balanced'` was applied in all
+Rather than reducing the majority class to force equal counts (which would have decreased the training set by approximately 55%), the original distribution was preserved and `class_weight='balanced'` was applied in all
 classifiers. This approach retains all available data while correcting for
 optimization bias during training.
 
@@ -124,33 +111,28 @@ optimization bias during training.
 
 ```
 Raw 4D fMRI (.nii.gz)
-        │
-        ▼
+      
 ROI Time Series Extraction
   · Harvard-Oxford cortical atlas (48 ROIs)
   · NiftiLabelsMasker
   · Per-ROI signal z-score normalized (zero mean, unit variance)
   · Output shape: (n_timepoints, 48)
-        │
-        ▼
+       
 Functional Connectivity Matrix
   · Pearson correlation across all ROI pairs
   · np.corrcoef(time_series.T)
   · Output shape: (48, 48)
-        │
-        ▼
+       
 Upper-Triangle Flatten
   · Symmetric matrix → retain upper triangle only (k=1)
   · Removes diagonal (self-correlation = 1.0) and redundant lower triangle
   · 48×48 = 2304 → 1128 unique features
-        │
-        ▼
+      
 NaN Replacement
   · Source: ROIs with zero-variance time series
     (no BOLD signal change → correlation undefined → NaN)
   · Replaced with 0.0 (treated as no connectivity)
-        │
-        ▼
+       
 Feature Matrix X: shape (n_subjects, 1128)
 ```
 
@@ -158,11 +140,11 @@ Feature Matrix X: shape (n_subjects, 1128)
 
 | Step | Decision | Reason |
 |---|---|---|
-| Z-score normalization | Per-ROI, per-subject | Removes scanner-level amplitude differences; preserves relative connectivity pattern |
-| Pearson correlation | Over full scan length | Standard FC estimator; computationally stable for this scan duration |
-| Upper triangle only | `np.triu_indices(48, k=1)` | FC matrix is symmetric; lower triangle is redundant |
+| Z-score normalization | Per-ROI, per-subject | Removes scanner-level amplitude differences, preserves relative connectivity pattern |
+| Pearson correlation | Over full scan length | Standard FC estimator, computationally stable for this scan duration |
+| Upper triangle only | `np.triu_indices(48, k=1)` | FC matrix is symmetric, lower triangle is redundant |
 | NaN → 0.0 | `np.nan_to_num` | Undefined correlation treated as absence of connectivity |
-| StratifiedKFold | Over KFold | KFold produced NaN accuracy folds due to child/adult imbalance in split; StratifiedKFold enforces class ratio per fold |
+| StratifiedKFold | Over KFold | KFold produced NaN accuracy folds due to child/adult imbalance in split, StratifiedKFold enforces class ratio per fold |
 
 ---
 
@@ -186,12 +168,7 @@ only the support vectors, which limits sensitivity to noise from irrelevant
 features.
 
 **Interpreting identical performance**
-Both models produced numerically identical results across all folds. This is
-not a coincidence — it reflects the structure of the data. When two classes
-are linearly separable, linear SVM and logistic regression converge to
-similar decision boundaries. The implication is that the FC-based
-representation is sufficient for adult/child discrimination without requiring
-nonlinear or more complex classifiers.
+Both models produced numerically identical results across all folds. This reflects the structure of the data rather than coincidence. When two classes are linearly separable, linear SVM and logistic regression converge to similar decision boundaries. The FC-based representation is sufficient for adult/child discrimination without nonlinear or more complex classifiers.
 
 ---
 
@@ -259,23 +236,22 @@ rationale for this combination is as follows:
 | Metric | Applied to | Interpretation |
 |---|---|---|
 | Accuracy | Classification | Overall fraction correct |
-| F1 (per class) | Classification | Harmonic mean of precision and recall; critical for imbalanced classes |
+| F1 (per class) | Classification | Harmonic mean of precision and recall (critical for imbalanced classes) |
 | MAE | Regression | Mean absolute prediction error in years; directly interpretable |
-| R² | Regression | Proportion of variance explained; 0 = no better than mean prediction |
-| Brain Age Gap | Individual report | Predicted age − actual age; positive = developmentally advanced |
+| R² | Regression | Proportion of variance explained (0 = no better than mean prediction) |
+| Brain Age Gap | Individual report | Predicted age − actual age (positive = developmentally advanced) |
 
 ### Why Not Accuracy Alone?
 
 At n=40, overall classification accuracy was 85% — but adult F1 was only 0.67.
 This discrepancy arises because the majority class (child) dominates the
 accuracy numerator. Reporting only overall accuracy would have overstated
-model performance on the clinically relevant minority class (adults). This
-motivated the use of per-class F1 as the primary classification metric.
+model performance on the clinically relevant minority class (adults). This is why per-class F1 was used as the primary classification metric.
 
 ### Permutation Test
 
 To verify that the PCA + Ridge model learned genuine structure rather than
-exploiting random correlations, a permutation test was conducted:
+exploiting random correlations, a permutation test was conducted.
 
 | | MAE |
 |---|---|
@@ -313,7 +289,7 @@ weighted avg       0.97      0.97      0.97       150
 The final model (PCA + Ridge, trained on all 118 children) generates an
 individual Brain Age Report for any subject in the dataset.
 
-**Example output — subject index 69 (actual age: 5.4 yrs)**
+**Example output: subject index 69 (actual age: 5.4 yrs)**
 
 ```
 Actual age     : 5.4 yrs
@@ -338,8 +314,7 @@ The report does not evaluate whether the model predicted the correct age in
 absolute terms. It situates the individual within their peer group. A gap of
 +0.63 years is meaningful not because the model was accurate to 0.63 years,
 but because it places this child in the upper half of their age-matched cohort.
-This peer-relative framing is what makes the output relevant to developmental
-evaluation contexts.
+This peer-relative framing makes the output relevant to developmental evaluation.
 
 ---
 
