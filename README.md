@@ -243,7 +243,7 @@ rationale for this combination is as follows:
 
 ### Why Not Accuracy Alone?
 
-At n=40, overall classification accuracy was 85% — but adult F1 was only 0.67.
+At n=40, overall classification accuracy was 85% but adult F1 was only 0.67.
 This discrepancy arises because the majority class (child) dominates the
 accuracy numerator. Reporting only overall accuracy would have overstated
 model performance on the clinically relevant minority class (adults). This is why per-class F1 was used as the primary classification metric.
