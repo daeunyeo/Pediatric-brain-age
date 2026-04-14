@@ -225,7 +225,7 @@ rationale for this combination is as follows:
 - Ridge then fits a regularized regression on these 50 components, further
   penalizing large coefficients.
 - KRR (RBF) underperformed (R² = −0.123), suggesting that nonlinear kernel
-  mapping does not help — and likely overfits — at this sample size.
+  mapping does not help and likely overfits at this sample size.
 
 ---
 
@@ -267,7 +267,7 @@ in the FC patterns beyond chance level.
 
 Note: R² = 0.292 indicates that approximately 29% of age variance is explained
 by the model. While statistically significant, this leaves substantial
-unexplained variance — a limitation acknowledged in Section 7.
+unexplained variance (a limitation acknowledged in Section 7).
 
 ### Classification Report (n = 150)
 
@@ -350,7 +350,7 @@ sequential or state-dependent patterns in brain activity.
 
 | Direction | Motivation |
 |---|---|
-| Apply to larger pediatric datasets (e.g., HCP-D, ABCD) | Improve generalizability; reduce reliance on single-dataset results |
+| Apply to larger pediatric datasets (e.g., HCP-D, ABCD) | Improve generalizability (reduce reliance on single-dataset results) |
 | Cross-dataset validation | Test whether FC-based brain age generalizes across acquisition sites |
 | Alternative atlas parcellations (Schaefer, AAL) | Assess sensitivity of results to ROI definition |
 | Use time series directly (e.g., RNN, Transformer) | Recover temporal information lost in FC summarization |
