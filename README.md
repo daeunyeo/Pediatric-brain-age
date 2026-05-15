@@ -1,10 +1,49 @@
 # pediatric-brain-age
 
-> Predicting brain developmental age from fMRI functional connectivity using classical machine learning
+> Predicting brain developmental age from fMRI functional connectivity
+> and generating individualized developmental reports via LLM interpretation.
+
+<img width="1768" height="1452" alt="20번 아동!" src="https://github.com/user-attachments/assets/33ce7f3c-3f58-4fec-a66c-8dbd9c101e5f" />
 
 ---
 
-## Key Results
+## What This Project Does
+
+- Predicts Brain Age Gap (BAG) from pediatric fMRI functional connectivity
+  using a classical ML pipeline (FC matrix, PCA, Ridge regression)
+- Translates numeric predictions into structured developmental reports
+  readable by caregivers, using an LLM interpretation layer
+- Validated on ds000228 (Richardson et al., 2018),
+  children aged 3.5 to 12.3 years
+
+### Why Pediatric
+
+Brain development is most rapid and variable during childhood,
+making this age range well suited for BAG analysis.
+Parents of young children have high demand for accessible,
+evidence based developmental information.
+This motivated the design of a caregiver readable report
+grounded in fMRI connectivity data.
+
+Adults in the dataset were used solely for classification
+validation and excluded from the regression and report pipeline.
+
+### Why Brain Age Gap (BAG)
+
+Children of the same chronological age can differ substantially in neural
+maturation. BAG is defined as predicted brain age minus chronological age.
+It quantifies this individual variation and serves as a potential index
+for developmental screening in educational and screening contexts.
+
+### Why LLM
+
+A numeric BAG value alone is not interpretable by non-specialists.
+The LLM layer converts model outputs into Korean language developmental
+reports for caregivers, incorporating network level connectivity profiles
+alongside the BAG estimate.
+
+
+### Key Results
 
 | Task | Model | Metric | Score |
 |---|---|---|---|
@@ -16,41 +55,7 @@
 
 ---
 
-## 1. Motivation & Background
-
-### Problem Statement
-
-The brain does not develop at a uniform pace across individuals. Two children
-of the same chronological age may differ substantially in their neural
-maturation. Neuroimaging offers a way to quantify this gap, but translating raw fMRI signals into interpretable developmental indices requires a complete ML pipeline from signal extraction to individual-level reporting.
-
-This project addresses the following question:
-
-> **Can functional connectivity (FC) patterns alone predict where an individual
-> child stands in their brain development relative to peers?**
-
-### From Classification to Regression
-
-The project was structured as a deliberate two-step progression:
-
-1. **Step 1. Classification**: Can FC patterns distinguish children from
-   adults? This verifies that the connectivity matrix carries age-relevant
-   information at all.
-2. **Step 2. Regression**: Can FC patterns predict continuous age? This
-   reframes the same data as a finer-grained estimation problem.
-
-Moving from classification to regression on the same pipeline was intentional: the same FC representation handles both tasks, and the comparison shows what each formulation reveals about the data.
-
-### Why Brain Age Gap?
-
-Predicting chronological age is not the end goal. The **Brain Age Gap**, defined as the residual between predicted brain age and actual age, is the informative quantity. A positive gap indicates that the brain appears more mature than
-expected for the child's age; a negative gap indicates the reverse. This
-residual has potential value as an individual-level indicator for
-developmental evaluation in educational or clinical contexts.
-
----
-
-## 2. Dataset & Rationale
+## 1. Dataset & Rationale
 
 ### Dataset Overview
 
@@ -59,9 +64,9 @@ developmental evaluation in educational or clinical contexts.
 | Dataset | OpenNeuro ds000228 (Richardson et al., 2018) |
 | Paradigm | Naturalistic movie-watching (Pixar short film) |
 | Total subjects | 155 (122 children, 33 adults) |
-| Used in this project | 150 (118 children aged 3.5–12.3 yrs, 32 adults) |
-| Age range (children) | 3.5 – 12.3 years |
-| Age range (adults) | 18.0 – 39.0 years |
+| Used in this project | 150 (118 children aged 3.5 - 12.3 yrs, 32 adults) |
+| Age range (children) | 3.5 - 12.3 years |
+| Age range (adults) | 18.0 - 39.0 years |
 | Atlas | Harvard-Oxford cortical atlas (48 ROIs) |
 
 ### Why This Dataset?
@@ -69,7 +74,7 @@ developmental evaluation in educational or clinical contexts.
 Three factors informed the selection of ds000228 over other publicly available
 fMRI datasets.
 
-**① Head motion and data quality in children**
+**1. Head motion and data quality in children**
 
 Resting-state fMRI requires subjects to remain still without any external
 stimulus. This is a known practical problem with young children, who show
@@ -77,7 +82,7 @@ elevated head motion artifacts under resting conditions. The movie-watching
 paradigm in ds000228 naturally sustains visual attention, reducing motion
 artifacts and improving signal quality in pediatric subjects. Using naturalistic stimuli to sustain attention in young participants is standard practice in developmental neuroimaging.
 
-**② Alignment with the dataset's original research purpose**
+**2. Alignment with the dataset's original research purpose**
 
 ds000228 was originally designed to study the development of the social brain
 (Richardson et al., 2018). The Pixar stimulus was selected by the original
@@ -85,7 +90,7 @@ authors to engage social cognition networks (including regions associated with t
 patterns in this dataset are particularly likely to carry developmental signal
 relevant to the prediction task pursued here.
 
-**③ Ecological validity and extensibility**
+**3. Ecological validity and extensibility**
 
 A brain-age assessment tool intended for real-world use must be compatible with
 protocols that are feasible in clinical and educational settings. A paradigm
@@ -93,6 +98,8 @@ built around passive movie-watching is substantially more deployable with
 children than a resting-state scan, which demands extended still compliance.
 This makes the pipeline developed here a more realistic candidate for
 future extension toward applied developmental screening.
+This project takes a step in that direction by generating caregiver
+readable reports from the same paradigm.
 
 <img width="683" height="578" alt="fc_matrix_example" src="https://github.com/user-attachments/assets/0bdb777a-63da-4931-854b-3e9e9d089105" />
 
@@ -105,7 +112,7 @@ optimization bias during training.
 
 ---
 
-## 3. Preprocessing Pipeline
+## 2. Preprocessing Pipeline
 
 ### Pipeline Overview
 
@@ -115,7 +122,7 @@ Raw 4D fMRI (.nii.gz)
 ROI Time Series Extraction
   · Harvard-Oxford cortical atlas (48 ROIs)
   · NiftiLabelsMasker
-  · Per-ROI signal z-score normalized (zero mean, unit variance)
+  · Per ROI signal z-score normalized (zero mean, unit variance)
   · Output shape: (n_timepoints, 48)
        
 Functional Connectivity Matrix
@@ -140,15 +147,32 @@ Feature Matrix X: shape (n_subjects, 1128)
 
 | Step | Decision | Reason |
 |---|---|---|
-| Z-score normalization | Per-ROI, per-subject | Removes scanner-level amplitude differences, preserves relative connectivity pattern |
+| Z-score normalization | Per ROI, per subject | Removes scanner-level amplitude differences, preserves relative connectivity pattern |
 | Pearson correlation | Over full scan length | Standard FC estimator, computationally stable for this scan duration |
 | Upper triangle only | `np.triu_indices(48, k=1)` | FC matrix is symmetric, lower triangle is redundant |
 | NaN → 0.0 | `np.nan_to_num` | Undefined correlation treated as absence of connectivity |
 | StratifiedKFold | Over KFold | KFold produced NaN accuracy folds due to child/adult imbalance in split, StratifiedKFold enforces class ratio per fold |
 
+### Network Level Analysis
+
+Three functional networks were defined using Harvard-Oxford atlas ROI indices:
+
+| Network | Key ROIs | Function |
+|---|---|---|
+| Language | IFG, STG, Planum Temporale | Language comprehension and production |
+| Social Cognition | mPFC, PCC, Angular Gyrus | Self-referential processing, social cognition |
+| Visual Processing | Lateral Occipital Cortex, Cuneal Cortex | Visual processing |
+
+For each subject, within-network mean connectivity strength was computed
+and converted to a z-score relative to age-matched peers within 1.5 years.
+
+Note: BAG and network z-scores are independent measures. BAG reflects
+overall FC pattern maturity. Network z-scores reflect relative connectivity
+strength within specific functional systems.
+
 ---
 
-## 4. Model Comparison & Selection
+## 3. Model Comparison & Selection
 
 ### Task 1: Child / Adult Classification (n = 150)
 
@@ -162,8 +186,8 @@ All models follow a `StandardScaler → Classifier` pipeline evaluated with
 
 **Why SVM?**
 In this setting, feature dimensionality (1128) substantially exceeds sample
-count (150). Linear SVM is theoretically well-suited to high-dimensional,
-low-sample-count problems because it finds a maximum-margin hyperplane using
+count (150). Linear SVM is theoretically well-suited to high dimensional,
+small sample count problems because it finds a maximum-margin hyperplane using
 only the support vectors, which limits sensitivity to noise from irrelevant
 features.
 
@@ -229,7 +253,7 @@ rationale for this combination is as follows:
 
 ---
 
-## 5. Evaluation & Statistical Validation
+## 4. Evaluation & Statistical Validation
 
 ### Metrics
 
@@ -240,6 +264,7 @@ rationale for this combination is as follows:
 | MAE | Regression | Mean absolute prediction error in years; directly interpretable |
 | R² | Regression | Proportion of variance explained (0 = no better than mean prediction) |
 | Brain Age Gap | Individual report | Predicted age − actual age (positive = developmentally advanced) |
+| Peer Ranking | Individual report | Percentile rank among peers (within 1.5 years), reported as top X% |
 
 ### Why Not Accuracy Alone?
 
@@ -284,97 +309,87 @@ weighted avg       0.97      0.97      0.97       150
 
 ---
 
-## 6. Brain Age Report Demo
+## 5. Brain Age Report
 
-The final model (PCA + Ridge, trained on all 118 children) generates an
-individual Brain Age Report for any subject in the dataset.
+The final model generates an individualized Brain Age Report
+for any subject in the dataset.
 
-**Example output: subject index 69 (actual age: 5.4 yrs)**
+### Report Structure
 
-```
-Actual age     : 5.4 yrs
-Predicted age  : 6.1 yrs  (± 2.10 yrs)
-Brain Age Gap  : +0.63 yrs
-Peer ranking   : Top 46%  (24th out of 50 age-matched peers)
-Interpretation : Brain development approximately 0.6 yrs ahead of peers
-```
+The report consists of four panels and a text interpretation section.
 
-<img width="1289" height="515" alt="69" src="https://github.com/user-attachments/assets/cb1b8b18-468b-481d-9b82-1e8e70e20c5e" />
+| Component | Description |
+|---|---|
+| BAG Distribution | Histogram of BAG among peers (within 1.5 years), with the subject marked |
+| Age Prediction | Scatter plot of predicted vs. actual age across all 118 children, with the subject highlighted and a MAE error bar |
+| Network Connectivity | Radar chart showing network level z-scores for Language, Social Cognition, and Visual Processing networks relative to peers |
+| LLM Report | Structured Korean language developmental report generated by an LLM, incorporating BAG estimate and network connectivity profiles |
 
-The report consists of two panels:
+### LLM Interpretation Layer
 
-- **Left panel**: Distribution of Brain Age Gap among age-matched peers
-  (±1.5 yrs), with the subject's gap marked.
-- **Right panel**: Scatter plot of predicted vs. actual age across all 118
-  children, with the subject highlighted and a ±MAE error bar shown.
+The LLM layer (Mistral API) receives the following inputs:
 
-**What makes this output distinct from raw age prediction**
+- BAG and predicted brain age
+- Peer ranking
+- Network level z-scores (Language, Social Cognition, Visual Processing)
+- ROI level connectivity profiles
 
-The report does not evaluate whether the model predicted the correct age in
-absolute terms. It situates the individual within their peer group. A gap of
-+0.63 years is meaningful not because the model was accurate to 0.63 years,
-but because it places this child in the upper half of their age-matched cohort.
-This peer-relative framing makes the output relevant to developmental evaluation.
+The output is a structured Korean language report covering:
+
+- Developmental level and peer comparison
+- Network connectivity strengths and areas for improvement
+- Activity recommendations based on network profiles
+
+Reports are generated in Korean as the target audience is Korean speaking caregivers.
+
+### Example Output
+
+<img width="1768" height="1452" alt="70번 아동!" src="https://github.com/user-attachments/assets/44d12e3c-8419-42f8-9133-8e1032b68889" />
+
+<img width="1768" height="1452" alt="90번 아동!" src="https://github.com/user-attachments/assets/bc8da5bb-d60b-498f-b168-17a13858baa8" />
 
 ---
 
-## 7. Limitations & Future Work
+## 6. Reflection
+
+### What Worked
+- FC matrix representation was sufficient for both
+  classification and age regression on the same pipeline
+- LLM interpretation layer successfully translated
+  numeric outputs into structured caregiver readable reports
+- Network z-score profiles provided interpretable
+  individual level connectivity patterns
 
 ### Limitations
+- Validated on a single dataset (n=118).
+  Generalizability to other pediatric fMRI datasets
+  remains to be tested.
+- R² of 0.292 indicates the model explains approximately
+  29% of age variance. Predictions should be interpreted
+  alongside the reported uncertainty bounds.
+- Network analysis covers three networks only,
+  defined based on ds000228 research context.
 
-**1. Low R² (0.292)**
-The model explains approximately 29% of age variance in the pediatric sample.
-The permutation test confirms this is above chance (p = 0.010), but the
-majority of developmental variance in FC patterns remains unaccounted for by
-this pipeline. Predictions should be interpreted with caution and alongside
-the reported uncertainty bounds.
-
-**2. Small single-dataset sample (n = 118 children)**
-All pediatric models were trained and evaluated on a single dataset. Results
-may not generalize to children scanned under different acquisition parameters,
-atlas parcellations, or demographic compositions. Cross-dataset validation was
-not performed.
-
-**3. Age-band MAE values are manually set**
-The uncertainty bounds displayed in the Brain Age Report (e.g., ±2.10 yrs)
-were manually assigned based on observed fold-level error patterns, not derived
-from a formal statistical model. These values approximate but do not rigorously
-represent prediction intervals.
-
-**4. Temporal information is discarded**
-Converting the BOLD time series to a static FC matrix loses all temporal
-dynamics. The correlation structure summarizes co-activation but cannot capture
-sequential or state-dependent patterns in brain activity.
-
-### Future Work
-
-| Direction | Motivation |
-|---|---|
-| Apply to larger pediatric datasets (e.g., HCP-D, ABCD) | Improve generalizability (reduce reliance on single-dataset results) |
-| Cross-dataset validation | Test whether FC-based brain age generalizes across acquisition sites |
-| Alternative atlas parcellations (Schaefer, AAL) | Assess sensitivity of results to ROI definition |
-| Use time series directly (e.g., RNN, Transformer) | Recover temporal information lost in FC summarization |
-| Formal prediction intervals | Replace manually set MAE bands with statistically derived confidence bounds |
-| Partial correlation via `nilearn.ConnectivityMeasure` | More precise FC estimation by controlling for indirect connectivity |
+### Future Directions
+- Apply to larger pediatric datasets 
+- Expand network definitions beyond three networks
+- Validate LLM report accuracy with domain experts
+- Support multilingual report generation
 
 ---
 
-## 8. Repository Structure
+## 7. Repository Structure
 
 ```
 pediatric-brain-age/
-├── figures/
-│   ├── fc_matrix_example.png
-│   ├── model_comparison.png
-│   ├── permutation_test.png
-│   └── brain_age_report.png
 ├── brain_age_pipeline.ipynb
+├── brain_age_llm_report.ipynb
 ├── README.md
 └── requirements.txt
 ```
 
-Clone the repo and run the notebooks in `brain_age_pipeline.ipynb` sequentially (01 → 05).
-The dataset fetches automatically on first run via `nilearn` and caches under `~/nilearn_data/`.
+The ML pipeline dataset fetches automatically via nilearn.
+The LLM report pipeline requires a Mistral API key.
 
 ---
 
@@ -384,3 +399,12 @@ Richardson, H., Lisandrelli, G., Riobueno-Naylor, A., & Saxe, R. (2018).
 Development of the social brain from age three to twelve years.
 *Nature Communications*, 9, 1027.
 https://doi.org/10.1038/s41467-018-03399-2
+
+Desikan, R. S., et al. (2006).
+An automated labeling system for subdividing the human cerebral cortex
+on MRI scans into gyral based regions of interest.
+*NeuroImage*, 31(3), 968-980.
+https://doi.org/10.1016/j.neuroimage.2006.01.021
+
+Mistral AI. (2024). Mistral API documentation.
+https://docs.mistral.ai
