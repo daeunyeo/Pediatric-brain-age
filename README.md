@@ -62,7 +62,7 @@ alongside the BAG estimate.
 | Property | Value |
 |---|---|
 | Dataset | OpenNeuro ds000228 (Richardson et al., 2018) |
-| Paradigm | Naturalistic movie-watching (Pixar short film) |
+| Paradigm | Naturalistic movie watching (Pixar short film) |
 | Total subjects | 155 (122 children, 33 adults) |
 | Used in this project | 150 (118 children aged 3.5 - 12.3 yrs, 32 adults) |
 | Age range (children) | 3.5 - 12.3 years |
@@ -76,9 +76,9 @@ fMRI datasets.
 
 **1. Head motion and data quality in children**
 
-Resting-state fMRI requires subjects to remain still without any external
+Resting state fMRI requires subjects to remain still without any external
 stimulus. This is a known practical problem with young children, who show
-elevated head motion artifacts under resting conditions. The movie-watching
+elevated head motion artifacts under resting conditions. The movie watching
 paradigm in ds000228 naturally sustains visual attention, reducing motion
 artifacts and improving signal quality in pediatric subjects. Using naturalistic stimuli to sustain attention in young participants is standard practice in developmental neuroimaging.
 
@@ -92,10 +92,10 @@ relevant to the prediction task pursued here.
 
 **3. Ecological validity and extensibility**
 
-A brain-age assessment tool intended for real-world use must be compatible with
+A brain age assessment tool intended for real-world use must be compatible with
 protocols that are feasible in clinical and educational settings. A paradigm
-built around passive movie-watching is substantially more deployable with
-children than a resting-state scan, which demands extended still compliance.
+built around passive movie watching is substantially more deployable with
+children than a resting state scan, which demands extended still compliance.
 This makes the pipeline developed here a more realistic candidate for
 future extension toward applied developmental screening.
 This project takes a step in that direction by generating caregiver
@@ -132,11 +132,11 @@ Functional Connectivity Matrix
        
 Upper-Triangle Flatten
   · Symmetric matrix → retain upper triangle only (k=1)
-  · Removes diagonal (self-correlation = 1.0) and redundant lower triangle
+  · Removes diagonal (autocorrelation = 1.0) and redundant lower triangle
   · 48×48 = 2304 → 1128 unique features
       
 NaN Replacement
-  · Source: ROIs with zero-variance time series
+  · Source: ROIs with zero variance time series
     (no BOLD signal change → correlation undefined → NaN)
   · Replaced with 0.0 (treated as no connectivity)
        
@@ -163,8 +163,8 @@ Three functional networks were defined using Harvard-Oxford atlas ROI indices:
 | Social Cognition | mPFC, PCC, Angular Gyrus | Self-referential processing, social cognition |
 | Visual Processing | Lateral Occipital Cortex, Cuneal Cortex | Visual processing |
 
-For each subject, within-network mean connectivity strength was computed
-and converted to a z-score relative to age-matched peers within 1.5 years.
+For each subject, within network mean connectivity strength was computed
+and converted to a z-score relative to age matched peers within 1.5 years.
 
 Note: BAG and network z-scores are independent measures. BAG reflects
 overall FC pattern maturity. Network z-scores reflect relative connectivity
@@ -187,7 +187,7 @@ All models follow a `StandardScaler → Classifier` pipeline evaluated with
 **Why SVM?**
 In this setting, feature dimensionality (1128) substantially exceeds sample
 count (150). Linear SVM is theoretically well-suited to high dimensional,
-small sample count problems because it finds a maximum-margin hyperplane using
+small sample count problems because it finds a maximum margin hyperplane using
 only the support vectors, which limits sensitivity to noise from irrelevant
 features.
 
